@@ -19,13 +19,13 @@ class EconomicTools:
     # 1. Tipo de cambio de una moneda respecto al quetzal (Frankfurter API)
     def consultar_tipo_cambio(self, moneda: str):
         try:
-            url = f"https://api.frankfurter.dev/v2/latest?base={moneda}&symbols=GTQ"
+            url = f"https://api.frankfurter.dev/v2/rates?base={moneda}&quotes=GTQ"
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
             data = resp.json()
             return {
                 "moneda": moneda,
-                "quetzales": data["rates"]["GTQ"],
+                "quetzales": data[0]["rate"],
                 "fuente": "Frankfurter API"
             }
         except Exception as e:
@@ -102,18 +102,19 @@ class EconomicTools:
         try:
             hoy = datetime.now(timezone.utc).date()
             inicio = hoy - timedelta(days=dias)
-            url = f"https://api.frankfurter.dev/v2/{inicio}..{hoy}?base={moneda}&symbols=GTQ"
+            url = f"https://api.frankfurter.dev/v2/rates?from={inicio}&to={hoy}&base={moneda}&quotes=GTQ"
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
-            data = resp.json()
-            fechas = sorted(data["rates"].keys())
-            valor_inicial = data["rates"][fechas[0]]["GTQ"]
-            valor_final = data["rates"][fechas[-1]]["GTQ"]
+            data = sorted(resp.json(), key=lambda d: d["date"])
+            if not data:
+                return {"error": "No hay datos disponibles para ese periodo."}
+            valor_inicial = data[0]["rate"]
+            valor_final = data[-1]["rate"]
             variacion_pct = ((valor_final - valor_inicial) / valor_inicial) * 100
             return {
                 "moneda": moneda,
-                "desde": fechas[0],
-                "hasta": fechas[-1],
+                "desde": data[0]["date"],
+                "hasta": data[-1]["date"],
                 "valor_inicial": valor_inicial,
                 "valor_final": valor_final,
                 "variacion_porcentual": round(variacion_pct, 2),
@@ -128,12 +129,14 @@ class EconomicTools:
         try:
             hoy = datetime.now(timezone.utc).date()
             inicio = hoy - timedelta(days=dias)
-            url = f"https://api.frankfurter.dev/v2/{inicio}..{hoy}?base={moneda}&symbols=GTQ"
+            url = f"https://api.frankfurter.dev/v2/rates?from={inicio}&to={hoy}&base={moneda}&quotes=GTQ"
             resp = requests.get(url, timeout=10)
             resp.raise_for_status()
-            data = resp.json()
-            fechas = sorted(data["rates"].keys())
-            valores = [data["rates"][f]["GTQ"] for f in fechas]
+            data = sorted(resp.json(), key=lambda d: d["date"])
+            if not data:
+                return {"error": "No hay datos disponibles para ese periodo."}
+            fechas = [d["date"] for d in data]
+            valores = [d["rate"] for d in data]
 
             plt.figure(figsize=(7, 4))
             plt.plot(fechas, valores, marker="o")

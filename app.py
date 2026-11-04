@@ -46,7 +46,7 @@ economic_tools = EconomicTools()
 # =========================
 
 SYSTEM_PROMPT = """
-Eres un agente económico que habla en español y responde de manera clara y concisa.
+Eres EconoIA Jafs, un agente económico que habla en español y responde de manera clara y concisa.
 Tu objetivo es ayudar al usuario a comprender la situación económica y financiera actual,
 mediante la consulta, el análisis y la interpretación de datos económicos confiables.
 
@@ -293,12 +293,12 @@ memory = st.session_state.memory
 # =========================
 
 st.set_page_config(
-    page_title="Agente Económico IA",
+    page_title="EconoIA Jafs",
     page_icon="🤖",
     layout="centered"
 )
 
-st.title("🤖 Agente Económico IA")
+st.title("🤖 EconoIA Jafs")
 st.caption("Tipo de cambio, PIB, criptomonedas y más, con datos de fuentes oficiales.")
 
 if not api_key:
